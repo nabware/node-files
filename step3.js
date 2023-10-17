@@ -37,16 +37,27 @@ async function webCat(url) {
 // cat(process.argv[2]);
 // webCat(process.argv[2]);
 
+// check for out
+// check for url or not
+// do stuff
+
 // if proces.argv.includes('--out')
 // get index of out, next index should be path
 
+const outIndex = process.argv.indexOf('--out');
+const urlOrFilenameIndex = outIndex === -1 ? 2 : 4;
+
 try {
-  new URL(process.argv[3]);
-  webCat(process.argv[3]);
+  new URL(process.argv[urlOrFilenameIndex]);
+
+  if (outIndex !== -1) {
+    webCatWrite(process.argv[3], process.argv[4]);
+  }
+  else {
+    webCat(process.argv[2]);
+  }
 
 } catch (err) {
-  const outIndex = process.argv.indexOf('--out');
-
   if (outIndex !== -1) {
     catWrite(process.argv[3], process.argv[4]);
   }
@@ -81,3 +92,24 @@ async function catWrite(path, filename) {
 
 }
 
+
+async function webCatWrite(path, url) {
+  let contents;
+
+  try {
+    const response = await fetch(url);
+    contents = await response.text();
+
+  } catch (err) {
+    console.log(err);
+    process.exit(1);
+  }
+
+  try {
+    await fsP.writeFile(path, contents, "utf8");
+  } catch (err) {
+    console.error(err);
+    process.exit(1);
+  }
+
+}
